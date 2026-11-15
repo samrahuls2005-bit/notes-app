@@ -1,0 +1,266 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #17152b, #39305e);
+  color: white;
+  min-height: 100vh;
+}
+
+.app {
+  width: 90%;
+  max-width: 850px;
+  margin: auto;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+h1 {
+  font-size: 38px;
+  margin-bottom: 30px;
+}
+
+h2 {
+  margin: 25px 0;
+  font-size: 25px;
+}
+
+h3 {
+  font-size: 21px;
+  margin-bottom: 12px;
+  overflow-wrap: anywhere;
+}
+
+p {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* Form */
+
+.note-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+input,
+textarea {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px;
+  border: 1px solid #aaa;
+  border-radius: 7px;
+  background: #ddd8ed;
+  color: #222;
+  font-size: 16px;
+  outline: none;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+input:focus,
+textarea:focus {
+  border: 2px solid #b69aff;
+}
+
+/* Buttons */
+
+button {
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  opacity: 0.85;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.button-group button {
+  min-width: 85px;
+}
+
+/* Form buttons */
+
+.add-btn {
+  background: #8b6ce0;
+  color: white;
+}
+
+.cancel-btn {
+  background: #666;
+  color: white;
+}
+
+/* Search */
+
+.search-section {
+  margin: 30px 0;
+}
+
+.search-section input {
+  max-width: 400px;
+}
+
+/* Notes */
+
+.notes-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.note {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 22px;
+  margin: 0 auto 20px;
+  width: 100%;
+  max-width: 600px;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+/* Short description preview */
+
+.note-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  cursor: pointer;
+  color: #ded8f0;
+  margin-bottom: 5px;
+}
+
+.note-preview:hover {
+  color: white;
+}
+
+.read-more {
+  color: #c2aaff;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.read-more:hover {
+  text-decoration: underline;
+}
+
+/* Full note view */
+
+.full-note {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 30px;
+  text-align: left;
+  min-height: 250px;
+}
+
+.full-note h1 {
+  margin: 30px 0 20px;
+  overflow-wrap: anywhere;
+}
+
+.full-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 17px;
+  line-height: 1.8;
+  color: #eee;
+}
+
+.close-btn {
+  background: #8b6ce0;
+  color: white;
+}
+
+/* Individual buttons */
+
+.edit-btn {
+  background: #3498db;
+  color: white;
+}
+
+.pin-btn {
+  background: #e6a23c;
+  color: white;
+}
+
+.archive-btn {
+  background: #7771bd;
+  color: white;
+}
+
+.trash-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+.restore-btn {
+  background: #27ae60;
+  color: white;
+}
+
+/* Sections */
+
+.archive-section,
+.trash-section {
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+  margin-top: 35px;
+  padding-top: 20px;
+}
+
+.empty {
+  color: #c4bfd8;
+  margin: 20px 0;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .app {
+    width: 100%;
+    padding: 25px 12px;
+  }
+
+  h1 {
+    font-size: 32px;
+  }
+
+  .button-group {
+    gap: 8px;
+  }
+
+  .button-group button {
+    min-width: 75px;
+    padding: 9px 11px;
+    font-size: 13px;
+  }
+}
