@@ -13,12 +13,10 @@ function App() {
   const [editId, setEditId] = useState(null)
   const [selectedNote, setSelectedNote] = useState(null)
 
-  // Save notes
   useEffect(() => {
     localStorage.setItem('notes', JSON.stringify(notes))
   }, [notes])
 
-  // Add Note
   const addNote = () => {
     if (!title.trim() || !content.trim()) {
       alert('Please enter title and description')
@@ -49,7 +47,6 @@ function App() {
     setContent('')
   }
 
-  // Edit Note
   const editNote = (note) => {
     setTitle(note.title)
     setContent(note.content)
@@ -58,14 +55,12 @@ function App() {
     window.scrollTo(0, 0)
   }
 
-  // Cancel Edit
   const cancelEdit = () => {
     setEditId(null)
     setTitle('')
     setContent('')
   }
 
-  // Move to Trash
   const deleteNote = (id) => {
     setNotes(notes.map(note =>
       note.id === id
@@ -74,7 +69,6 @@ function App() {
     ))
   }
 
-  // Restore from Trash
   const restoreTrash = (id) => {
     setNotes(notes.map(note =>
       note.id === id
@@ -83,14 +77,12 @@ function App() {
     ))
   }
 
-  // Permanently Delete
   const permanentDelete = (id) => {
     if (window.confirm('Permanently delete this note?')) {
       setNotes(notes.filter(note => note.id !== id))
     }
   }
 
-  // Pin and Unpin
   const togglePin = (id) => {
     setNotes(notes.map(note =>
       note.id === id
@@ -99,7 +91,6 @@ function App() {
     ))
   }
 
-  // Archive
   const archiveNote = (id) => {
     setNotes(notes.map(note =>
       note.id === id
@@ -108,7 +99,6 @@ function App() {
     ))
   }
 
-  // Restore Archived Note
   const restoreNote = (id) => {
     setNotes(notes.map(note =>
       note.id === id
@@ -117,7 +107,6 @@ function App() {
     ))
   }
 
-  // Search
   const filteredNotes = notes.filter(note =>
     !note.archived &&
     !note.trashed &&
@@ -141,7 +130,6 @@ function App() {
 
   const trashedNotes = notes.filter(note => note.trashed)
 
-  // Show Full Note
   if (selectedNote) {
     const currentNote = notes.find(
       note => note.id === selectedNote
