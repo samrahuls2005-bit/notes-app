@@ -40,7 +40,6 @@ p {
   overflow-wrap: anywhere;
 }
 
-/* Form */
 
 .note-form {
   display: flex;
@@ -73,7 +72,6 @@ textarea:focus {
   border: 2px solid #b69aff;
 }
 
-/* Buttons */
 
 button {
   border: none;
@@ -103,7 +101,6 @@ button:hover {
   min-width: 85px;
 }
 
-/* Form buttons */
 
 .add-btn {
   background: #8b6ce0;
@@ -115,7 +112,6 @@ button:hover {
   color: white;
 }
 
-/* Search */
 
 .search-section {
   margin: 30px 0;
@@ -125,7 +121,6 @@ button:hover {
   max-width: 400px;
 }
 
-/* Notes */
 
 .notes-container {
   display: flex;
@@ -145,7 +140,6 @@ button:hover {
   overflow-wrap: anywhere;
 }
 
-/* Short description preview */
 
 .note-preview {
   display: -webkit-box;
@@ -172,7 +166,6 @@ button:hover {
   text-decoration: underline;
 }
 
-/* Full note view */
 
 .full-note {
   background: rgba(255, 255, 255, 0.08);
@@ -201,8 +194,6 @@ button:hover {
   color: white;
 }
 
-/* Individual buttons */
-
 .edit-btn {
   background: #3498db;
   color: white;
@@ -228,7 +219,6 @@ button:hover {
   color: white;
 }
 
-/* Sections */
 
 .archive-section,
 .trash-section {
@@ -242,7 +232,6 @@ button:hover {
   margin: 20px 0;
 }
 
-/* Mobile */
 
 @media (max-width: 600px) {
   .app {
