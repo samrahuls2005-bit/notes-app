@@ -1,15 +1,46 @@
-import { useState, useEffect } from 'react'
+
+import { useEffect, useState } from 'react'
 import './App.css'
+
+function AllNotesIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M8 3v18M12 8h5M12 12h5M12 16h5" />
+    </svg>
+  )
+}
+
+function ArchiveIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="5" rx="1" />
+      <path d="M5 9v11h14V9M10 13h4" />
+    </svg>
+  )
+}
+
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 7h16M10 11v6M14 11v6M5 7l1 14h12l1-14M9 7V4h6v3" />
+    </svg>
+  )
+}
 
 function App() {
   const [notes, setNotes] = useState(() => {
-    const savedNotes = localStorage.getItem('notes')
-    return savedNotes ? JSON.parse(savedNotes) : []
+    try {
+      return JSON.parse(localStorage.getItem('notes')) || []
+    } catch {
+      return []
+    }
   })
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [search, setSearch] = useState('')
+  const [activePage, setActivePage] = useState('all')
   const [editId, setEditId] = useState(null)
   const [selectedNote, setSelectedNote] = useState(null)
 
@@ -19,40 +50,44 @@ function App() {
 
   const addNote = () => {
     if (!title.trim() || !content.trim()) {
-      alert('Please enter title and description')
+      alert('Please enter a title and description.')
       return
     }
 
     if (editId !== null) {
-      setNotes(notes.map(note =>
-        note.id === editId
-          ? { ...note, title, content }
-          : note
-      ))
+      setNotes(previous =>
+        previous.map(note =>
+          note.id === editId
+            ? { ...note, title: title.trim(), content: content.trim() }
+            : note
+        )
+      )
       setEditId(null)
     } else {
-      const newNote = {
-        id: Date.now(),
-        title,
-        content,
-        pinned: false,
-        archived: false,
-        trashed: false
-      }
-
-      setNotes([...notes, newNote])
+      setNotes(previous => [
+        ...previous,
+        {
+          id: Date.now(),
+          title: title.trim(),
+          content: content.trim(),
+          pinned: false,
+          archived: false,
+          trashed: false
+        }
+      ])
     }
 
     setTitle('')
     setContent('')
   }
 
-  const editNote = (note) => {
+  const editNote = note => {
     setTitle(note.title)
     setContent(note.content)
     setEditId(note.id)
     setSelectedNote(null)
-    window.scrollTo(0, 0)
+    setActivePage('all')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const cancelEdit = () => {
@@ -61,313 +96,397 @@ function App() {
     setContent('')
   }
 
-  const deleteNote = (id) => {
-    setNotes(notes.map(note =>
-      note.id === id
-        ? { ...note, trashed: true, archived: false, pinned: false }
-        : note
-    ))
-  }
-
-  const restoreTrash = (id) => {
-    setNotes(notes.map(note =>
-      note.id === id
-        ? { ...note, trashed: false }
-        : note
-    ))
-  }
-
-  const permanentDelete = (id) => {
-    if (window.confirm('Permanently delete this note?')) {
-      setNotes(notes.filter(note => note.id !== id))
-    }
-  }
-
-  const togglePin = (id) => {
-    setNotes(notes.map(note =>
-      note.id === id
-        ? { ...note, pinned: !note.pinned }
-        : note
-    ))
-  }
-
-  const archiveNote = (id) => {
-    setNotes(notes.map(note =>
-      note.id === id
-        ? { ...note, archived: true, pinned: false }
-        : note
-    ))
-  }
-
-  const restoreNote = (id) => {
-    setNotes(notes.map(note =>
-      note.id === id
-        ? { ...note, archived: false }
-        : note
-    ))
-  }
-
-  const filteredNotes = notes.filter(note =>
-    !note.archived &&
-    !note.trashed &&
-    (
-      note.title.toLowerCase().includes(search.toLowerCase()) ||
-      note.content.toLowerCase().includes(search.toLowerCase())
-    )
-  )
-
-  const activeNotes = filteredNotes.sort(
-    (a, b) => Number(b.pinned) - Number(a.pinned)
-  )
-
-  const archivedNotes = notes.filter(note =>
-    note.archived && !note.trashed &&
-    (
-      note.title.toLowerCase().includes(search.toLowerCase()) ||
-      note.content.toLowerCase().includes(search.toLowerCase())
-    )
-  )
-
-  const trashedNotes = notes.filter(note => note.trashed)
-
-  if (selectedNote) {
-    const currentNote = notes.find(
-      note => note.id === selectedNote
-    )
-
-    if (currentNote) {
-      return (
-        <div className="app">
-          <div className="full-note">
-            <button
-              className="close-btn"
-              onClick={() => setSelectedNote(null)}
-            >
-              Close
-            </button>
-
-            <h1>{currentNote.title}</h1>
-
-            <p className="full-description">
-              {currentNote.content}
-            </p>
-          </div>
-        </div>
+  const moveToTrash = id => {
+    setNotes(previous =>
+      previous.map(note =>
+        note.id === id
+          ? { ...note, trashed: true, archived: false, pinned: false }
+          : note
       )
+    )
+    setSelectedNote(null)
+  }
+
+  const restoreTrash = id => {
+    setNotes(previous =>
+      previous.map(note =>
+        note.id === id ? { ...note, trashed: false } : note
+      )
+    )
+  }
+
+  const permanentDelete = id => {
+    if (window.confirm('Permanently delete this note?')) {
+      setNotes(previous => previous.filter(note => note.id !== id))
+      setSelectedNote(null)
     }
+  }
+
+  const togglePin = id => {
+    setNotes(previous =>
+      previous.map(note =>
+        note.id === id ? { ...note, pinned: !note.pinned } : note
+      )
+    )
+  }
+
+  const archiveNote = id => {
+    setNotes(previous =>
+      previous.map(note =>
+        note.id === id
+          ? { ...note, archived: true, pinned: false }
+          : note
+      )
+    )
+    setSelectedNote(null)
+  }
+
+  const restoreArchive = id => {
+    setNotes(previous =>
+      previous.map(note =>
+        note.id === id ? { ...note, archived: false } : note
+      )
+    )
+  }
+
+  const matchesSearch = note =>
+    note.title.toLowerCase().includes(search.toLowerCase()) ||
+    note.content.toLowerCase().includes(search.toLowerCase())
+
+  const allNotes = notes
+    .filter(note => !note.archived && !note.trashed && matchesSearch(note))
+    .sort((a, b) => Number(b.pinned) - Number(a.pinned))
+
+  const archivedNotes = notes.filter(
+    note => note.archived && !note.trashed && matchesSearch(note)
+  )
+
+  const trashedNotes = notes.filter(
+    note => note.trashed && matchesSearch(note)
+  )
+
+  const visibleNotes =
+    activePage === 'archive'
+      ? archivedNotes
+      : activePage === 'trash'
+        ? trashedNotes
+        : allNotes
+
+  const pageTitle =
+    activePage === 'archive'
+      ? 'Archived Notes'
+      : activePage === 'trash'
+        ? 'Trash'
+        : 'All notes'
+
+  const currentNote = notes.find(note => note.id === selectedNote)
+
+  const startNewNote = () => {
+    setActivePage('all')
+    setSelectedNote(null)
+    setEditId(null)
+    setTitle('')
+    setContent('')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
-    <div className="app">
+    <div className="app-layout">
 
-      <h1>My Notes App</h1>
+      <aside className="sidebar">
 
-      {/* Add Note Form */}
-
-      <div className="note-form">
-
-        <input
-          type="text"
-          placeholder="Enter note title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-
-        <textarea
-          placeholder="Write your note description..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-
-        <div className="button-group">
-          <button className="add-btn" onClick={addNote}>
-            {editId !== null ? 'Update Note' : 'Add Note'}
-          </button>
-
-          {editId !== null && (
-            <button className="cancel-btn" onClick={cancelEdit}>
-              Cancel
-            </button>
-          )}
+        <div className="brand">
+          <div className="brand-icon">N</div>
+          <div>
+            <h2>My Notes App</h2>
+            <p>Your personal notes</p>
+          </div>
         </div>
 
-      </div>
+        <button className="create-button" onClick={startNewNote}>
+          <span>＋</span> Create a note
+        </button>
 
-      {/* Search */}
+        <div className="sidebar-heading">NOTES</div>
 
-      <div className="search-section">
-        <h2>Search Notes</h2>
+        <button
+          className={`nav-item ${activePage === 'all' ? 'active' : ''}`}
+          onClick={() => {
+            setActivePage('all')
+            setSelectedNote(null)
+          }}
+        >
+          <span className="nav-icon">
+            <AllNotesIcon />
+          </span>
+          <span>All Notes</span>
+          <span className="nav-count">
+            {notes.filter(n => !n.archived && !n.trashed).length}
+          </span>
+        </button>
 
-        <input
-          type="text"
-          placeholder="Search by title or content..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+        <button
+          className={`nav-item ${activePage === 'archive' ? 'active' : ''}`}
+          onClick={() => {
+            setActivePage('archive')
+            setSelectedNote(null)
+          }}
+        >
+          <span className="nav-icon">
+            <ArchiveIcon />
+          </span>
+          <span>Archived</span>
+          <span className="nav-count">
+            {notes.filter(n => n.archived && !n.trashed).length}
+          </span>
+        </button>
 
-      {/* My Notes */}
+        <button
+          className={`nav-item ${activePage === 'trash' ? 'active' : ''}`}
+          onClick={() => {
+            setActivePage('trash')
+            setSelectedNote(null)
+          }}
+        >
+          <span className="nav-icon">
+            <TrashIcon />
+          </span>
+          <span>Trash</span>
+          <span className="nav-count">
+            {notes.filter(n => n.trashed).length}
+          </span>
+        </button>
 
-      <section className="notes-section">
+      </aside>
 
-        <h2>My Notes</h2>
+      <main className="main-content">
 
-        <div className="notes-container">
+        <div className="topbar">
+          <p>My Notes App / {pageTitle}</p>
+        </div>
 
-          {activeNotes.map(note => (
+        {currentNote ? (
+          <section className="detail-view">
+            <button
+              className="secondary-button"
+              onClick={() => setSelectedNote(null)}
+            >
+              ← Back to notes
+            </button>
 
-            <div className="note" key={note.id}>
+            <h1>{currentNote.title}</h1>
+            <p className="detail-content">{currentNote.content}</p>
 
-              <h3>
-                {note.pinned ? '📌 ' : ''}
-                {note.title}
-              </h3>
+            <div className="action-buttons">
+              {!currentNote.trashed && (
+                <>
+                  {!currentNote.archived && (
+                    <button className="edit-button" onClick={() => editNote(currentNote)}>
+                      Edit
+                    </button>
+                  )}
+                  <button
+                    className="archive-button"
+                    onClick={() =>
+                      currentNote.archived
+                        ? restoreArchive(currentNote.id)
+                        : archiveNote(currentNote.id)
+                    }
+                  >
+                    {currentNote.archived ? 'Restore' : 'Archive'}
+                  </button>
+                  <button
+                    className="delete-button"
+                    onClick={() => moveToTrash(currentNote.id)}
+                  >
+                    Move to Trash
+                  </button>
+                </>
+              )}
 
-              <p
-                className="note-preview"
-                onClick={() => setSelectedNote(note.id)}
-                title="Click to read full description"
-              >
-                {note.content}
-              </p>
+              {currentNote.trashed && (
+                <>
+                  <button className="restore-button" onClick={() => restoreTrash(currentNote.id)}>
+                    Restore
+                  </button>
+                  <button className="delete-button" onClick={() => permanentDelete(currentNote.id)}>
+                    Permanently Delete
+                  </button>
+                </>
+              )}
+            </div>
+          </section>
+        ) : (
+          <>
+            <header className="page-header">
+              <div>
+                <p className="eyebrow">YOUR NOTES</p>
+                <h1>{pageTitle}</h1>
+                <p className="subtitle">
+                  {activePage === 'all'
+                    ? 'Capture your thoughts, plans and little ideas.'
+                    : activePage === 'archive'
+                      ? 'Your notes saved for later.'
+                      : 'Notes you have moved to trash.'}
+                </p>
+              </div>
+            </header>
 
-              <p
-                className="read-more"
-                onClick={() => setSelectedNote(note.id)}
-              >
-                Read full note
-              </p>
+            {activePage === 'all' && (
+              <section className="capture-card">
+                <p className="card-label">
+                  {editId !== null ? 'EDIT NOTE' : 'QUICK CAPTURE'}
+                </p>
 
-              <div className="button-group">
+                <input
+                  className="title-input"
+                  type="text"
+                  placeholder="Give your note a title"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                />
 
-                <button className="edit-btn"
-                  onClick={() => editNote(note)}>
-                  Edit
-                </button>
+                <textarea
+                  className="content-input"
+                  placeholder="What's in your mind?"
+                  value={content}
+                  onChange={e => setContent(e.target.value)}
+                />
 
-                <button className="pin-btn"
-                  onClick={() => togglePin(note.id)}>
-                  {note.pinned ? 'Unpin' : 'Pin'}
-                </button>
+                <div className="capture-actions">
+                  <button className="save-button" onClick={addNote}>
+                    {editId !== null ? 'Update Note' : '＋ Save Note'}
+                  </button>
 
-                <button className="archive-btn"
-                  onClick={() => archiveNote(note.id)}>
-                  Archive
-                </button>
+                  {editId !== null && (
+                    <button className="secondary-button" onClick={cancelEdit}>
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </section>
+            )}
 
-                <button className="trash-btn"
-                  onClick={() => deleteNote(note.id)}>
-                  Trash
-                </button>
+            <section className="notes-area">
+              <div className="notes-toolbar">
+                <h2>{activePage === 'all' ? 'Your notes' : pageTitle}</h2>
 
+                <input
+                  className="search-input"
+                  type="search"
+                  placeholder="Search notes..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
               </div>
 
-            </div>
+              {visibleNotes.length > 0 ? (
+                <div className="notes-grid">
+                  {visibleNotes.map(note => (
+                    <article className="note-card" key={note.id}>
+                      <div className="note-card-top">
+                        <span className="note-tag">
+                          {note.trashed
+                            ? 'TRASH'
+                            : note.archived
+                              ? 'ARCHIVED'
+                              : note.pinned
+                                ? 'PINNED'
+                                : 'NOTE'}
+                        </span>
 
-          ))}
+                        {note.pinned && !note.archived && !note.trashed && (
+                          <span className="pin-indicator">📌</span>
+                        )}
+                      </div>
 
-        </div>
+                      <h3>{note.title}</h3>
 
-        {activeNotes.length === 0 && <p>No notes found</p>}
+                      <p
+                        className="note-preview"
+                        onClick={() => setSelectedNote(note.id)}
+                      >
+                        {note.content}
+                      </p>
 
-      </section>
+                      <button
+                        className="read-button"
+                        onClick={() => setSelectedNote(note.id)}
+                      >
+                        Read full note →
+                      </button>
 
-      {/* Archived Notes */}
+                      <div className="card-actions">
+                        {activePage === 'all' && (
+                          <>
+                            <button className="edit-button" onClick={() => editNote(note)}>
+                              Edit
+                            </button>
+                            <button className="pin-button" onClick={() => togglePin(note.id)}>
+                              {note.pinned ? 'Unpin' : 'Pin'}
+                            </button>
+                            <button className="archive-button" onClick={() => archiveNote(note.id)}>
+                              Archive
+                            </button>
+                            <button className="delete-button" onClick={() => moveToTrash(note.id)}>
+                              Trash
+                            </button>
+                          </>
+                        )}
 
-      <section className="archive-section">
+                        {activePage === 'archive' && (
+                          <>
+                            <button className="restore-button" onClick={() => restoreArchive(note.id)}>
+                              Restore
+                            </button>
+                            <button className="delete-button" onClick={() => moveToTrash(note.id)}>
+                              Trash
+                            </button>
+                          </>
+                        )}
 
-        <h2>Archived Notes</h2>
+                        {activePage === 'trash' && (
+                          <>
+                            <button className="restore-button" onClick={() => restoreTrash(note.id)}>
+                              Restore
+                            </button>
+                            <button className="delete-button" onClick={() => permanentDelete(note.id)}>
+                              Delete permanently
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon">
+                    {activePage === 'trash'
+                      ? '▤'
+                      : activePage === 'archive'
+                        ? '▣'
+                        : '＋'}
+                  </div>
+                  <h3>
+                    {activePage === 'trash'
+                      ? 'Your trash is empty'
+                      : activePage === 'archive'
+                        ? 'No archived notes yet'
+                        : 'A little space for big ideas.'}
+                  </h3>
+                  <p>
+                    {activePage === 'all'
+                      ? 'Create your first note and keep your thoughts organised.'
+                      : 'Your notes will appear here when you move them to this section.'}
+                  </p>
+                </div>
+              )}
+            </section>
+          </>
+        )}
 
-        {archivedNotes.map(note => (
-
-          <div className="note" key={note.id}>
-
-            <h3>{note.title}</h3>
-
-            <p
-              className="note-preview"
-              onClick={() => setSelectedNote(note.id)}
-            >
-              {note.content}
-            </p>
-
-            <p
-              className="read-more"
-              onClick={() => setSelectedNote(note.id)}
-            >
-              Read full note
-            </p>
-
-            <div className="button-group">
-
-              <button className="restore-btn"
-                onClick={() => restoreNote(note.id)}>
-                Restore
-              </button>
-
-              <button className="trash-btn"
-                onClick={() => deleteNote(note.id)}>
-                Trash
-              </button>
-
-            </div>
-
-          </div>
-
-        ))}
-
-        {archivedNotes.length === 0 && <p>No archived notes</p>}
-
-      </section>
-
-      {/* Trash Section */}
-
-      <section className="trash-section">
-
-        <h2>Trash</h2>
-
-        {trashedNotes.map(note => (
-
-          <div className="note" key={note.id}>
-
-            <h3>{note.title}</h3>
-
-            <p
-              className="note-preview"
-              onClick={() => setSelectedNote(note.id)}
-            >
-              {note.content}
-            </p>
-
-            <p
-              className="read-more"
-              onClick={() => setSelectedNote(note.id)}
-            >
-              Read full note
-            </p>
-
-            <div className="button-group">
-
-              <button className="restore-btn"
-                onClick={() => restoreTrash(note.id)}>
-                Restore
-              </button>
-
-              <button className="trash-btn"
-                onClick={() => permanentDelete(note.id)}>
-                Permanently Delete
-              </button>
-
-            </div>
-
-          </div>
-
-        ))}
-
-        {trashedNotes.length === 0 && <p>Trash is empty</p>}
-
-      </section>
-
+      </main>
     </div>
   )
 }
